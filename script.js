@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setLanguage(lang) {
         currentLang = lang;
         document.documentElement.lang = lang;
-        
+
         // Update Title
         const titleEl = document.querySelector('title');
         titleEl.textContent = titleEl.getAttribute(`data-${lang}`);
@@ -142,15 +142,15 @@ document.addEventListener('DOMContentLoaded', () => {
         progressEl.style.width = `${progressPercentage}%`;
 
         prevBtn.classList.toggle('hidden', currentStep === 0);
-        
+
         const nextText = currentLang === 'ru' ? 'Далее' : 'Înainte';
         const finishText = currentLang === 'ru' ? 'Рассчитать' : 'Calculează';
         nextBtn.textContent = currentStep === quizSteps.length - 1 ? finishText : nextText;
     }
 
     function saveAnswer() {
-        if(currentStep >= quizSteps.length) return true;
-        
+        if (currentStep >= quizSteps.length) return true;
+
         const step = quizSteps[currentStep];
         if (step.type === 'radio') {
             const selected = document.querySelector(`input[name="${step.name}"]:checked`);
@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const meters = parseInt(answers.meters) || 0;
         const points = parseInt(answers.points) || 0;
         let total = (meters * quizSteps[1].price) + (points * quizSteps[2].price);
-        
-        if(total === 0) total = 200; // minimum callout fee
+
+        if (total === 0) total = 200; // minimum callout fee
 
         let multiplier = 1;
         if (answers.urgency === 'urgent') multiplier = 1.5;
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('submitBtn');
         const originalBtnText = btn.textContent;
         const waitText = currentLang === 'ru' ? 'Отправка...' : 'Se expediază...';
-        
+
         btn.textContent = waitText;
         btn.disabled = true;
 
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
             const text = await resp.text();
-            
+
             if (resp.ok) {
                 msgDiv.innerHTML = `<span style="color: green; font-weight: 600;">${currentLang === 'ru' ? 'Заявка успешно отправлена! Скоро свяжемся.' : 'Cererea a fost expediată! Vă vom contacta.'}</span>`;
                 form.reset();
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btn.textContent = originalBtnText;
         btn.disabled = false;
-        
+
         setTimeout(() => { msgDiv.innerHTML = ''; }, 5000);
     });
 
@@ -263,9 +263,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const body = header.nextElementSibling;
             const isVisible = body.style.display === 'block';
             document.querySelectorAll('.accordion-body').forEach(el => el.style.display = 'none');
-            if(!isVisible) {
+            if (!isVisible) {
                 body.style.display = 'block';
             }
         });
     });
+    // 6. Floating Messenger Toggle
+    const fToggleBtn = document.getElementById('f-toggleBtn');
+    const fContainer = document.querySelector('.floating-btn');
+    if (fToggleBtn && fContainer) {
+        const msgIcon = fToggleBtn.querySelector('.msg-icon');
+        const closeIcon = fToggleBtn.querySelector('.close-icon');
+
+        fToggleBtn.addEventListener('click', () => {
+            fContainer.classList.toggle('active');
+            msgIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+        });
+    }
 });
