@@ -1,16 +1,16 @@
 :root {
-  --primary: #1E3A8A;
-  /* Deep Blue */
-  --primary-light: #3B82F6;
-  --accent: #F59E0B;
-  /* Amber/Yellow for Electricity */
-  --accent-hover: #D97706;
+  --primary: #374151;
+  /* Dark Gray */
+  --primary-light: #4B5563;
+  --accent: #FACC15;
+  /* Electric Yellow */
+  --accent-hover: #EAB308;
   --bg-light: #F8FAFC;
   --bg-white: #FFFFFF;
   --text-dark: #1E293B;
   --text-muted: #64748B;
-  --bg-dark: #0F172A;
-  --bg-darker: #020617;
+  --bg-dark: #1F2937;
+  --bg-darker: #111827;
   --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(255, 255, 255, 0.2);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -124,6 +124,10 @@ ul {
   background-color: var(--bg-darker);
 }
 
+.highlight-yellow {
+  color: var(--accent);
+}
+
 /* Grids */
 .grid-2 {
   display: grid;
@@ -162,14 +166,15 @@ ul {
 
 .btn-primary {
   background-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+  color: var(--bg-darker);
+  box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4);
 }
 
 .btn-primary:hover {
   background-color: var(--accent-hover);
+  color: var(--bg-darker);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+  box-shadow: 0 6px 20px rgba(250, 204, 21, 0.6);
 }
 
 .btn-secondary {
@@ -317,7 +322,7 @@ input:checked+.slider:before {
 /* Hero */
 .hero {
   padding: 160px 0 80px;
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
   position: relative;
   overflow: hidden;
 }
