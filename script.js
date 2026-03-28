@@ -1,102 +1,139 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Current Year in Footer
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // 2. Language Toggle
-    const langToggle = document.getElementById('lang-toggle');
+    const langButtons = document.querySelectorAll('.lang-label[data-lang]');
     let currentLang = 'ru';
+    const langCodeMap = {
+        ru: 'ru',
+        ro: 'sr-Latn-ME',
+        en: 'en'
+    };
 
     function setLanguage(lang) {
         currentLang = lang;
-        document.documentElement.lang = lang;
+        document.documentElement.lang = langCodeMap[lang] || 'ru';
 
-        // Update Title
         const titleEl = document.querySelector('title');
-        titleEl.textContent = titleEl.getAttribute(`data-${lang}`);
+        const translatedTitle = titleEl.getAttribute(`data-${lang}`) || titleEl.getAttribute('data-ru');
+        titleEl.textContent = translatedTitle;
 
-        // Update all data-[lang] elements
-        document.querySelectorAll(`[data-ru][data-ro]`).forEach(el => {
-            const translatedText = el.getAttribute(`data-${lang}`);
-            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        document.querySelectorAll('[data-ru]').forEach(el => {
+            const translatedText = el.getAttribute(`data-${lang}`) || el.getAttribute('data-ru');
+            if (!translatedText) return;
+
+            if (el.tagName === 'META') {
+                el.setAttribute('content', translatedText);
+            } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                 el.placeholder = translatedText;
-            } else if (el.tagName !== 'META' && el.tagName !== 'TITLE') {
+            } else if (el.tagName !== 'TITLE') {
                 el.innerHTML = translatedText;
             }
         });
 
-        // Update Toggle Labels UI
-        const labelRu = document.querySelector('.lang-label.ru');
-        const labelRo = document.querySelector('.lang-label.ro');
-        if (lang === 'ro') {
-            labelRo.classList.add('active');
-            labelRu.classList.remove('active');
-            langToggle.checked = true;
-        } else {
-            labelRu.classList.add('active');
-            labelRo.classList.remove('active');
-            langToggle.checked = false;
-        }
+        document.querySelectorAll('[data-alt-ru]').forEach(el => {
+            const translatedAlt = el.getAttribute(`data-alt-${lang}`) || el.getAttribute('data-alt-ru');
+            if (translatedAlt) el.setAttribute('alt', translatedAlt);
+        });
 
-        // Re-render quiz to update texts
+        document.querySelectorAll('[data-title-ru]').forEach(el => {
+            const translatedTitle = el.getAttribute(`data-title-${lang}`) || el.getAttribute('data-title-ru');
+            if (translatedTitle) el.setAttribute('title', translatedTitle);
+        });
+
+        langButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.lang === lang);
+        });
+
         renderQuizStep();
     }
 
-    langToggle.addEventListener('change', (e) => {
-        setLanguage(e.target.checked ? 'ro' : 'ru');
+    langButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setLanguage(button.dataset.lang);
+        });
     });
 
-    // 3. Quiz Calculator Logic
     const quizSteps = [
         {
             ru: 'Какой тип работ требуется?',
-            ro: 'Ce tip de lucrări este necesar?',
+            ro: 'Koja vrsta radova je potrebna?',
+            en: 'What type of work do you need?',
             type: 'radio',
             name: 'work_type',
             options: [
-                { val: 'full', ru: 'Полный монтаж (квартира/дом)', ro: 'Montaj complet (apartament/casă)' },
-                { val: 'partial', ru: 'Частичная замена', ro: 'Schimbare parțială' },
-                { val: 'point', ru: 'Установка розеток/выключателей', ro: 'Instalare prize/întrerupătoare' }
+                { val: 'full', ru: 'Полный монтаж (квартира/дом)', ro: 'Kompletna instalacija (stan/kuća)', en: 'Full installation (apartment/house)' },
+                { val: 'partial', ru: 'Частичная замена', ro: 'Djelimična zamjena', en: 'Partial replacement' },
+                { val: 'point', ru: 'Установка розеток/выключателей', ro: 'Ugradnja utičnica/prekidača', en: 'Sockets and switches installation' }
             ]
         },
         {
             ru: 'Примерная длина кабеля (метры)?',
-            ro: 'Lungimea aproximativă a cablului (metri)?',
+            ro: 'Približna dužina kabla (u metrima)?',
+            en: 'Approximate cable length (meters)?',
             type: 'number',
             name: 'meters',
             placeholder_ru: 'Например: 50',
-            placeholder_ro: 'De exemplu: 50',
-            price: 20 // MDL per meter
+            placeholder_ro: 'Na primjer: 50',
+            placeholder_en: 'For example: 50',
+            price: 20
         },
         {
             ru: 'Количество точек (розетки, выключатели)?',
-            ro: 'Numărul de puncte (prize, întrerupătoare)?',
+            ro: 'Broj tačaka (utičnice, prekidači)?',
+            en: 'Number of points (sockets, switches)?',
             type: 'number',
             name: 'points',
             placeholder_ru: 'Например: 15',
-            placeholder_ro: 'De exemplu: 15',
-            price: 150 // MDL per point
+            placeholder_ro: 'Na primjer: 15',
+            placeholder_en: 'For example: 15',
+            price: 150
         },
         {
             ru: 'Нужна ли закупка материалов?',
-            ro: 'Este necesară procurarea materialelor?',
+            ro: 'Da li je potrebna nabavka materijala?',
+            en: 'Do you need help purchasing materials?',
             type: 'radio',
             name: 'materials',
             options: [
-                { val: 'yes', ru: 'Да, мастер закупает', ro: 'Da, meșterul procură' },
-                { val: 'no', ru: 'Нет, все куплено', ro: 'Nu, totul este cumpărat' }
+                { val: 'yes', ru: 'Да, мастер закупает', ro: 'Da, majstor nabavlja', en: 'Yes, electrician buys them' },
+                { val: 'no', ru: 'Нет, все куплено', ro: 'Ne, sve je već kupljeno', en: 'No, everything is already bought' }
             ]
         },
         {
             ru: 'Срочность выполнения?',
-            ro: 'Urgența execuției?',
+            ro: 'Koliko je hitno izvođenje radova?',
+            en: 'How urgent is the job?',
             type: 'radio',
             name: 'urgency',
             options: [
-                { val: 'standard', ru: 'В плановом порядке (множитель x1)', ro: 'În regim normal (x1)', multiplier: 1 },
-                { val: 'urgent', ru: 'Срочно (сегодня) (+50%)', ro: 'Urgent (astăzi) (+50%)', multiplier: 1.5 }
+                { val: 'standard', ru: 'В плановом порядке (x1)', ro: 'Standardno (x1)', en: 'Standard (x1)', multiplier: 1 },
+                { val: 'urgent', ru: 'Срочно (сегодня) (+50%)', ro: 'Hitno (danas) (+50%)', en: 'Urgent (today) (+50%)', multiplier: 1.5 }
             ]
         }
     ];
+
+    const uiText = {
+        next: { ru: 'Далее', ro: 'Dalje', en: 'Next' },
+        finish: { ru: 'Рассчитать', ro: 'Izračunaj', en: 'Calculate' },
+        resultTitle: { ru: 'Примерная стоимость:', ro: 'Okvirna cijena:', en: 'Estimated cost:' },
+        resultSubtitle: {
+            ru: 'Окончательная цена после осмотра.',
+            ro: 'Konačna cijena se određuje nakon pregleda.',
+            en: 'The final price is confirmed after inspection.'
+        },
+        currency: { ru: 'EUR', ro: 'EUR', en: 'EUR' },
+        cta: { ru: 'Оставить заявку', ro: 'Pošalji upit', en: 'Send request' },
+        lead: { ru: 'Расчет', ro: 'Izračun', en: 'Estimate' },
+        request: { ru: 'Заявка с сайта', ro: 'Upit sa sajta', en: 'Request from website' },
+        wait: { ru: 'Отправка...', ro: 'Slanje...', en: 'Sending...' },
+        success: {
+            ru: 'Заявка успешно отправлена! Скоро свяжемся.',
+            ro: 'Upit je uspješno poslat. Uskoro vas kontaktiramo.',
+            en: 'Your request has been sent successfully. We will contact you shortly.'
+        },
+        error: { ru: 'Ошибка отправки.', ro: 'Greška pri slanju.', en: 'Sending failed.' },
+        network: { ru: 'Ошибка сети.', ro: 'Greška mreže.', en: 'Network error.' }
+    };
 
     let currentStep = 0;
     const answers = {};
@@ -119,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `<div class="quiz-options">`;
 
         if (step.type === 'radio') {
-            step.options.forEach((opt, idx) => {
+            step.options.forEach(opt => {
                 const checked = answers[step.name] === opt.val ? 'checked' : '';
                 html += `
                     <label class="quiz-radio">
@@ -130,22 +167,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else if (step.type === 'number') {
             const val = answers[step.name] || '';
-            const placeholder = currentLang === 'ru' ? step.placeholder_ru : step.placeholder_ro;
+            const placeholder = step[`placeholder_${currentLang}`] || step.placeholder_ru;
             html += `<input type="number" class="quiz-input" name="${step.name}" value="${val}" placeholder="${placeholder}" min="0">`;
         }
 
         html += `</div></div>`;
         container.innerHTML = html;
 
-        // Update progress and buttons
         const progressPercentage = ((currentStep + 1) / (quizSteps.length + 1)) * 100;
         progressEl.style.width = `${progressPercentage}%`;
 
         prevBtn.classList.toggle('hidden', currentStep === 0);
-
-        const nextText = currentLang === 'ru' ? 'Далее' : 'Înainte';
-        const finishText = currentLang === 'ru' ? 'Рассчитать' : 'Calculează';
-        nextBtn.textContent = currentStep === quizSteps.length - 1 ? finishText : nextText;
+        nextBtn.textContent = currentStep === quizSteps.length - 1 ? uiText.finish[currentLang] : uiText.next[currentLang];
     }
 
     function saveAnswer() {
@@ -155,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (step.type === 'radio') {
             const selected = document.querySelector(`input[name="${step.name}"]:checked`);
             if (selected) answers[step.name] = selected.value;
-            // Allow skipping if not vital, but let's default to not empty
             if (!answers[step.name] && step.name === 'urgency') answers[step.name] = 'standard';
         } else if (step.type === 'number') {
             const input = document.querySelector(`input[name="${step.name}"]`);
@@ -165,33 +197,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showQuizResult() {
-        // Calculate
-        const meters = parseInt(answers.meters) || 0;
-        const points = parseInt(answers.points) || 0;
+        const meters = parseInt(answers.meters, 10) || 0;
+        const points = parseInt(answers.points, 10) || 0;
         let total = (meters * quizSteps[1].price) + (points * quizSteps[2].price);
 
-        if (total === 0) total = 200; // minimum callout fee
+        if (total === 0) total = 20;
+        if (answers.urgency === 'urgent') total = Math.round(total * 1.5);
 
-        let multiplier = 1;
-        if (answers.urgency === 'urgent') multiplier = 1.5;
-
-        total = Math.round(total * multiplier);
-
-        // Render result
-        const titleText = currentLang === 'ru' ? 'Примерная стоимость:' : 'Cost aproximativ:';
-        const subtitleText = currentLang === 'ru' ? 'Окончательная цена после осмотра.' : 'Prețul final se stabilește după examinare.';
-        const mdlText = currentLang === 'ru' ? 'лей' : 'lei';
-        const ctaText = currentLang === 'ru' ? 'Оставить заявку' : 'Lăsați o cerere';
-
-        const resultStr = `~ ${total} ${mdlText}`;
+        const resultStr = `~ ${total} ${uiText.currency[currentLang]}`;
         calcResultHidden.value = `meters: ${meters}, points: ${points}, total: ${total}`;
 
         container.innerHTML = `
             <div class="quiz-step text-center">
-                <h3>${titleText}</h3>
+                <h3>${uiText.resultTitle[currentLang]}</h3>
                 <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 20px 0;">${resultStr}</div>
-                <p>${subtitleText}</p>
-                <a href="#contact" class="btn btn-primary mt-15" onclick="document.getElementById('form-problem').value='Расчет: ${resultStr} / Заявка с сайта';">${ctaText}</a>
+                <p>${uiText.resultSubtitle[currentLang]}</p>
+                <a href="#contact" class="btn btn-primary mt-15" onclick="document.getElementById('form-problem').value='${uiText.lead[currentLang]}: ${resultStr} / ${uiText.request[currentLang]}';">${uiText.cta[currentLang]}</a>
             </div>
         `;
 
@@ -216,10 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Init Quiz
     renderQuizStep();
 
-    // 4. Form Submit handler (Fetch to form.php)
     const form = document.getElementById('contactForm');
     const msgDiv = document.getElementById('form-message');
 
@@ -227,9 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         const originalBtnText = btn.textContent;
-        const waitText = currentLang === 'ru' ? 'Отправка...' : 'Se expediază...';
 
-        btn.textContent = waitText;
+        btn.textContent = uiText.wait[currentLang];
         btn.disabled = true;
 
         const formData = new FormData(form);
@@ -239,36 +257,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: formData
             });
-            const text = await resp.text();
 
             if (resp.ok) {
-                msgDiv.innerHTML = `<span style="color: green; font-weight: 600;">${currentLang === 'ru' ? 'Заявка успешно отправлена! Скоро свяжемся.' : 'Cererea a fost expediată! Vă vom contacta.'}</span>`;
+                msgDiv.innerHTML = `<span style="color: green; font-weight: 600;">${uiText.success[currentLang]}</span>`;
                 form.reset();
             } else {
-                msgDiv.innerHTML = `<span style="color: red;">${currentLang === 'ru' ? 'Ошибка отправки.' : 'Eroare la expediere.'}</span>`;
+                msgDiv.innerHTML = `<span style="color: red;">${uiText.error[currentLang]}</span>`;
             }
         } catch (err) {
-            msgDiv.innerHTML = `<span style="color: red;">Network Error.</span>`;
+            msgDiv.innerHTML = `<span style="color: red;">${uiText.network[currentLang]}</span>`;
         }
 
         btn.textContent = originalBtnText;
         btn.disabled = false;
 
-        setTimeout(() => { msgDiv.innerHTML = ''; }, 5000);
+        setTimeout(() => {
+            msgDiv.innerHTML = '';
+        }, 5000);
     });
 
-    // 5. Accordion Logic
     document.querySelectorAll('.accordion-header').forEach(header => {
         header.addEventListener('click', () => {
             const body = header.nextElementSibling;
             const isVisible = body.style.display === 'block';
-            document.querySelectorAll('.accordion-body').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.accordion-body').forEach(el => {
+                el.style.display = 'none';
+            });
             if (!isVisible) {
                 body.style.display = 'block';
             }
         });
     });
-    // 6. Floating Messenger Toggle
+
     const fToggleBtn = document.getElementById('f-toggleBtn');
     const fContainer = document.querySelector('.floating-btn');
     if (fToggleBtn && fContainer) {
@@ -281,4 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeIcon.classList.toggle('hidden');
         });
     }
+
+    setLanguage('ru');
 });
