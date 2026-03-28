@@ -230,11 +230,12 @@ ul {
 .logo {
   display: flex;
   align-items: center;
+  min-width: 180px;
 }
 
 .site-logo {
-  width: 84px;
-  height: 84px;
+  width: 180px;
+  height: auto;
   display: block;
   object-fit: contain;
 }
